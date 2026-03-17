@@ -39,7 +39,7 @@ const firebaseConfig = {
    วิธีหา: Firebase Console
    → Project Settings → Cloud Messaging → Web Push certificates
    ─────────────────────────────────────── */
-const VAPID_KEY = "YOUR_VAPID_KEY";
+const VAPID_KEY = "BB705N0HoZzPrKygh3sDuFwkZhC3vpC-tpfXWecuyh9eVuPippIDW4dxjGVlWNI2RLCncAwFSX3uDqm-bp6nm-s";
 
 /* ══════════════════════════════════════════
    INIT
