@@ -4,259 +4,14 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>พาร์ตี้ไฟ — หาเพื่อนร่วมกิจกรรม</title>
+
+  <!-- External CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
-  <style>
-    /* ── Variables ── */
-    :root {
-      --bg:#0d0d0f; --surface:#16161a; --surface2:#1e1e24;
-      --border:rgba(255,255,255,0.07); --accent:#c8f135;
-      --accent2:#7b61ff; --accent3:#ff6b6b; --text:#f0f0f5; --muted:#7a7a8c;
-      --radius:18px;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;min-height:100vh;
-      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-    }
 
-    /* ── Auth Screen ── */
-    #authScreen{
-      position:fixed;inset:0;z-index:999;background:var(--bg);
-      display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:14px;
-    }
-    .auth-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:2.2rem;letter-spacing:-1px}
-    .auth-logo span{color:var(--accent)}
-    .auth-tagline{color:var(--muted);font-size:0.88rem;margin-bottom:4px}
-    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:380px}
-    .auth-tab{display:flex;gap:4px;margin-bottom:20px;background:var(--surface2);border-radius:10px;padding:4px}
-    .auth-tab button{
-      flex:1;padding:8px;border:none;border-radius:8px;cursor:pointer;
-      font-family:'Sarabun',sans-serif;font-size:0.9rem;font-weight:600;
-      background:transparent;color:var(--muted);transition:all .18s;
-    }
-    .auth-tab button.active{background:var(--accent);color:#0d0d0f}
-    .a-input{
-      width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--border);
-      background:var(--surface2);color:var(--text);font-family:'Sarabun',sans-serif;
-      font-size:.92rem;margin-bottom:10px;outline:none;transition:border-color .18s;
-    }
-    .a-input:focus{border-color:rgba(200,241,53,.5)}
-    .a-input::placeholder{color:var(--muted)}
-    .a-error{color:var(--accent3);font-size:.8rem;min-height:18px;margin-bottom:4px}
-    .btn-auth{
-      width:100%;padding:12px;border-radius:12px;border:none;cursor:pointer;
-      background:var(--accent);color:#0d0d0f;font-family:'Sarabun',sans-serif;
-      font-size:1rem;font-weight:700;margin-top:2px;transition:filter .18s,transform .12s;display:flex;align-items:center;justify-content:center;gap:8px;
-    }
-    .btn-auth:hover{filter:brightness(1.08)}.btn-auth:active{transform:scale(.98)}
-    .auth-or{text-align:center;color:var(--muted);font-size:.8rem;margin:12px 0}
-    .btn-google{
-      width:100%;padding:11px;border-radius:12px;border:1px solid var(--border);cursor:pointer;
-      background:var(--surface2);color:var(--text);font-family:'Sarabun',sans-serif;
-      font-size:.9rem;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;transition:border-color .18s;
-    }
-    .btn-google:hover{border-color:rgba(255,255,255,.2)}
-
-    /* ── Main App ── */
-    #mainApp{display:none}
-    .app-shell{max-width:480px;margin:0 auto;position:relative}
-
-    /* Header */
-    .app-header{
-      position:sticky;top:0;z-index:300;background:rgba(13,13,15,.88);
-      backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-      border-bottom:1px solid var(--border);padding:14px 20px;
-    }
-    .brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;letter-spacing:-.5px}
-    .brand span{color:var(--accent)}
-    .notif-btn{position:relative;cursor:pointer}
-    .notif-dot{
-      position:absolute;top:-2px;right:-2px;width:8px;height:8px;
-      background:var(--accent3);border-radius:50%;border:2px solid var(--bg);
-      display:none;
-    }
-    .notif-dot.show{display:block}
-    .header-avatar{
-      width:36px;height:36px;border-radius:50%;
-      background:linear-gradient(135deg,var(--accent2),var(--accent3));
-      display:flex;align-items:center;justify-content:center;
-      font-weight:700;font-size:.75rem;flex-shrink:0;cursor:pointer;
-    }
-
-    /* Filter chips */
-    .filter-row{padding:14px 20px 4px;gap:8px;overflow-x:auto;scrollbar-width:none}
-    .filter-row::-webkit-scrollbar{display:none}
-    .chip{
-      display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:100px;
-      font-size:.82rem;font-weight:500;white-space:nowrap;cursor:pointer;
-      border:1.5px solid var(--border);background:var(--surface);color:var(--muted);transition:all .18s;
-    }
-    .chip.active{background:var(--accent);border-color:var(--accent);color:#0d0d0f;font-weight:700}
-    .chip:not(.active):hover{border-color:rgba(255,255,255,.2);color:var(--text)}
-
-    .section-label{font-size:.75rem;font-weight:700;letter-spacing:.08em;color:var(--muted);padding:20px 20px 8px}
-
-    /* Cards */
-    .feed{padding:0 16px 120px;display:flex;flex-direction:column;gap:12px}
-    .activity-card{
-      background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-      overflow:hidden;transition:transform .2s,box-shadow .2s;animation:slideUp .4s ease both;
-    }
-    @keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-    .activity-card:nth-child(1){animation-delay:.05s}.activity-card:nth-child(2){animation-delay:.10s}
-    .activity-card:nth-child(3){animation-delay:.15s}.activity-card:nth-child(4){animation-delay:.20s}
-    .activity-card:nth-child(5){animation-delay:.25s}.activity-card:nth-child(6){animation-delay:.30s}
-    .activity-card:active{transform:scale(.985)}
-    .card-top-area{cursor:pointer}
-    .card-accent-bar{height:3px;width:100%}
-    .card-body-custom{padding:16px 18px 18px}
-    .card-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
-    .card-emoji{
-      width:46px;height:46px;border-radius:12px;background:var(--surface2);
-      display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;
-    }
-    .card-title-block{flex:1;min-width:0}
-    .card-title{font-family:'Sarabun',sans-serif;font-weight:700;font-size:1.05rem;line-height:1.3;margin-bottom:3px}
-    .card-subtitle{font-size:.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .urgency-badge{font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:100px;flex-shrink:0;white-space:nowrap}
-    .card-info{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-    .info-pill{
-      display:inline-flex;align-items:center;gap:5px;background:var(--surface2);
-      border-radius:8px;padding:5px 10px;font-size:.8rem;color:var(--text);
-    }
-    .info-pill i{font-size:.8rem;color:var(--muted)}
-    .info-pill.people-pill{background:rgba(200,241,53,.10);border:1px solid rgba(200,241,53,.25)}
-    .info-pill.people-pill i,.info-pill.people-pill .pcount{color:var(--accent)}
-    .avatar-stack{display:flex;align-items:center;margin-bottom:14px}
-    .av{
-      width:26px;height:26px;border-radius:50%;border:2px solid var(--surface);margin-right:-8px;
-      font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-    }
-    .av-label{margin-left:14px;font-size:.78rem;color:var(--muted)}
-
-    /* Buttons */
-    .btn-join{
-      width:100%;padding:11px;border-radius:12px;font-family:'Sarabun',sans-serif;
-      font-weight:600;font-size:.92rem;border:none;cursor:pointer;
-      transition:filter .18s,transform .12s;display:flex;align-items:center;justify-content:center;gap:7px;
-    }
-    .btn-join:active{transform:scale(.97)}.btn-join:hover:not(:disabled){filter:brightness(1.1)}
-    .btn-join:disabled{opacity:.5;cursor:not-allowed;filter:none!important;transform:none!important}
-    .s-lime{background:var(--accent);color:#0d0d0f}
-    .s-purple{background:rgba(123,97,255,.18);color:#b39dff;border:1px solid rgba(123,97,255,.35)}
-    .s-red{background:rgba(255,107,107,.15);color:#ff9898;border:1px solid rgba(255,107,107,.3)}
-    .s-teal{background:rgba(77,218,196,.15);color:#5de8cc;border:1px solid rgba(77,218,196,.3)}
-    .s-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
-    .s-joined{background:rgba(200,241,53,.12);color:var(--accent);border:1px solid rgba(200,241,53,.3)}
-
-    /* FAB */
-    .fab{
-      position:fixed;bottom:28px;right:24px;z-index:200;width:58px;height:58px;border-radius:18px;
-      background:var(--accent);color:#0d0d0f;border:none;font-size:1.6rem;
-      display:flex;align-items:center;justify-content:center;
-      box-shadow:0 8px 28px rgba(200,241,53,.35),0 2px 8px rgba(0,0,0,.5);cursor:pointer;
-      transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
-      animation:fabPop .5s cubic-bezier(.34,1.56,.64,1) .6s both;
-    }
-    @keyframes fabPop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-    .fab:hover{transform:scale(1.08) rotate(4deg);box-shadow:0 12px 36px rgba(200,241,53,.45),0 4px 12px rgba(0,0,0,.5)}
-    .fab:active{transform:scale(.95)}
-
-    /* Bottom nav */
-    .bottom-nav{
-      position:fixed;bottom:0;left:0;right:0;z-index:150;background:rgba(22,22,26,.92);
-      backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-      border-top:1px solid var(--border);display:flex;justify-content:space-around;
-      padding:10px 0 calc(10px + env(safe-area-inset-bottom));
-    }
-    .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:2px 20px}
-    .nav-item i{font-size:1.35rem;color:var(--muted);transition:color .15s}
-    .nav-item span{font-size:.7rem;color:var(--muted);transition:color .15s}
-    .nav-item.active i,.nav-item.active span{color:var(--accent)}
-
-    /* Modal / Bottom sheet */
-    .modal-overlay{
-      position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);
-      display:flex;align-items:flex-end;justify-content:center;
-      opacity:0;pointer-events:none;transition:opacity .25s;
-    }
-    .modal-overlay.open{opacity:1;pointer-events:all}
-    .modal-sheet{
-      background:var(--surface);width:100%;max-width:480px;
-      border-radius:24px 24px 0 0;padding:0 24px 36px;
-      transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
-      max-height:92vh;overflow-y:auto;
-    }
-    .modal-overlay.open .modal-sheet{transform:translateY(0)}
-    .modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:14px auto 20px}
-    .modal-title{font-family:'Sarabun',sans-serif;font-weight:700;font-size:1.2rem;margin-bottom:4px}
-    .modal-sub{font-size:.83rem;color:var(--muted);margin-bottom:18px}
-
-    /* Form elements */
-    .f-label{font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:5px;display:block;letter-spacing:.04em;text-transform:uppercase}
-    .f-input{
-      width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--border);
-      background:var(--surface2);color:var(--text);font-family:'Sarabun',sans-serif;
-      font-size:.92rem;outline:none;transition:border-color .18s;margin-bottom:14px;
-    }
-    .f-input:focus{border-color:rgba(200,241,53,.5)}
-    .f-input::placeholder{color:var(--muted)}
-    .emoji-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-    .emoji-opt{
-      width:44px;height:44px;border-radius:10px;background:var(--surface2);
-      border:2px solid transparent;display:flex;align-items:center;justify-content:center;
-      font-size:1.4rem;cursor:pointer;transition:border-color .15s,background .15s;
-    }
-    .emoji-opt.sel{border-color:var(--accent);background:rgba(200,241,53,.1)}
-    .grad-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-    .grad-opt{width:32px;height:32px;border-radius:8px;cursor:pointer;border:3px solid transparent;transition:transform .15s,border-color .15s}
-    .grad-opt.sel{border-color:white;transform:scale(1.15)}
-
-    /* Detail modal extras */
-    .member-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
-    .member-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0}
-    .sec-head{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:18px 0 8px}
-
-    /* Notification panel */
-    #notifPanel .notif-item{
-      display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start;
-    }
-    #notifPanel .notif-icon{
-      width:36px;height:36px;border-radius:10px;background:var(--surface2);
-      display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;
-    }
-    #notifPanel .notif-text{font-size:.85rem;line-height:1.5}
-    #notifPanel .notif-time{font-size:.72rem;color:var(--muted);margin-top:2px}
-    #notifPanel .notif-unread{background:rgba(200,241,53,.08);border-radius:10px;padding:2px 8px;margin:-2px -8px}
-
-    /* Toast */
-    .toast-bar{
-      position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
-      background:var(--surface);border:1px solid var(--border);border-radius:12px;
-      padding:10px 18px;font-size:.88rem;font-weight:500;white-space:nowrap;
-      z-index:900;opacity:0;transition:opacity .22s,transform .22s;pointer-events:none;
-    }
-    .toast-bar.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-    /* Spinner */
-    .spin{width:16px;height:16px;border:2px solid rgba(0,0,0,.2);border-top-color:#0d0d0f;border-radius:50%;animation:spinning .6s linear infinite;display:inline-block;vertical-align:middle}
-    .spin.light{border-color:rgba(255,255,255,.2);border-top-color:var(--text)}
-    @keyframes spinning{to{transform:rotate(360deg)}}
-
-    /* Skeleton */
-    .skel{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shim 1.4s infinite;border-radius:8px}
-    @keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
-    .skel-card{height:180px;border-radius:var(--radius);margin-bottom:12px}
-
-    /* Request badge on cards */
-    .request-badge{
-      display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:600;
-      padding:2px 8px;border-radius:100px;background:rgba(123,97,255,.18);color:#b39dff;
-      margin-left:6px;vertical-align:middle;
-    }
-  </style>
+  <!-- App CSS -->
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
@@ -264,10 +19,11 @@
 <div id="authScreen">
   <div class="auth-logo">พาร์ตี้<span>ไฟ</span></div>
   <p class="auth-tagline">หาเพื่อนร่วมกิจกรรมใกล้บ้าน ง่ายๆ</p>
+
   <div class="auth-card">
     <div class="auth-tab">
       <button class="active" id="tabLogin"    onclick="switchTab('login')">เข้าสู่ระบบ</button>
-      <button            id="tabRegister" onclick="switchTab('register')">สมัครสมาชิก</button>
+      <button               id="tabRegister" onclick="switchTab('register')">สมัครสมาชิก</button>
     </div>
 
     <!-- Login panel -->
@@ -319,7 +75,7 @@
     </div>
   </header>
 
-  <!-- Search -->
+  <!-- Search bar -->
   <div class="px-4 pt-3 pb-1">
     <div class="d-flex align-items-center gap-2 px-3"
          style="background:var(--surface);border:1px solid var(--border);border-radius:14px;height:44px">
@@ -342,7 +98,7 @@
 
   <div class="section-label" id="sectionLabel">กำลังโหลด…</div>
 
-  <!-- Feed -->
+  <!-- Activity Feed -->
   <div class="feed" id="feed">
     <div class="skel skel-card"></div>
     <div class="skel skel-card"></div>
@@ -358,11 +114,11 @@
 
 <!-- Bottom nav -->
 <nav class="bottom-nav">
-  <div class="nav-item active"  onclick="setNav(this)"><i class="bi bi-house-fill"></i><span>ฟีด</span></div>
-  <div class="nav-item"         onclick="setNav(this,'explore')"><i class="bi bi-compass"></i><span>สำรวจ</span></div>
+  <div class="nav-item active"  onclick="setNav(this)">          <i class="bi bi-house-fill"></i><span>ฟีด</span></div>
+  <div class="nav-item"         onclick="setNav(this,'explore')"> <i class="bi bi-compass"></i><span>สำรวจ</span></div>
   <div class="nav-item"         style="width:58px"></div>
-  <div class="nav-item"         onclick="setNav(this,'myplans')"><i class="bi bi-calendar3"></i><span>แผนของฉัน</span></div>
-  <div class="nav-item"         onclick="setNav(this,'profile')"><i class="bi bi-person"></i><span>โปรไฟล์</span></div>
+  <div class="nav-item"         onclick="setNav(this,'myplans')"> <i class="bi bi-calendar3"></i><span>แผนของฉัน</span></div>
+  <div class="nav-item"         onclick="setNav(this,'profile')"> <i class="bi bi-person"></i><span>โปรไฟล์</span></div>
 </nav>
 </div><!-- /mainApp -->
 
@@ -374,7 +130,7 @@
   </div>
 </div>
 
-<!-- ══════════ MODAL: CREATE ══════════ -->
+<!-- ══════════ MODAL: CREATE ACTIVITY ══════════ -->
 <div class="modal-overlay" id="createModal" onclick="closeModal('createModal')">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
@@ -398,11 +154,16 @@
 
     <label class="f-label">ไอคอน</label>
     <div class="emoji-grid" id="emojiPicker">
-      <div class="emoji-opt sel" data-e="🏀">🏀</div><div class="emoji-opt" data-e="⚽">⚽</div>
-      <div class="emoji-opt" data-e="🎮">🎮</div><div class="emoji-opt" data-e="🎸">🎸</div>
-      <div class="emoji-opt" data-e="🍜">🍜</div><div class="emoji-opt" data-e="🧘">🧘</div>
-      <div class="emoji-opt" data-e="🖼️">🖼️</div><div class="emoji-opt" data-e="🎨">🎨</div>
-      <div class="emoji-opt" data-e="🏊">🏊</div><div class="emoji-opt" data-e="🎤">🎤</div>
+      <div class="emoji-opt sel" data-e="🏀">🏀</div>
+      <div class="emoji-opt" data-e="⚽">⚽</div>
+      <div class="emoji-opt" data-e="🎮">🎮</div>
+      <div class="emoji-opt" data-e="🎸">🎸</div>
+      <div class="emoji-opt" data-e="🍜">🍜</div>
+      <div class="emoji-opt" data-e="🧘">🧘</div>
+      <div class="emoji-opt" data-e="🖼️">🖼️</div>
+      <div class="emoji-opt" data-e="🎨">🎨</div>
+      <div class="emoji-opt" data-e="🏊">🏊</div>
+      <div class="emoji-opt" data-e="🎤">🎤</div>
     </div>
 
     <label class="f-label">สีการ์ด</label>
@@ -442,7 +203,9 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="contactTitle">ส่ง Request เข้าร่วม</div>
     <p class="modal-sub" id="contactSub">ผู้จัดจะได้รับการแจ้งเตือนและอนุมัติคำขอของคุณ</p>
-    <textarea class="f-input" id="contactMsg" rows="3" placeholder="แนะนำตัวหน่อย เช่น สวัสดีครับ เล่นบาสมา 5 ปีครับ 😊" style="resize:none;height:90px"></textarea>
+    <textarea class="f-input" id="contactMsg" rows="3"
+      placeholder="แนะนำตัวหน่อย เช่น สวัสดีครับ เล่นบาสมา 5 ปีครับ 😊"
+      style="resize:none;height:90px"></textarea>
     <button class="btn-join s-purple" id="contactSubmitBtn" onclick="submitRequest()">
       <i class="bi bi-send-fill"></i> ส่ง Request
     </button>
@@ -472,672 +235,16 @@
 <!-- Toast -->
 <div class="toast-bar" id="toastBar"></div>
 
-<!-- ══════════════════════════════════════════
-     FIREBASE  (ES Module)
-══════════════════════════════════════════ -->
-<script type="module">
-/* ─────────────────────────────────────────
-   🔧  แทนที่ด้วย Firebase Config ของคุณ
-   ─────────────────────────────────────────
-   วิธีหา config: Firebase Console
-   → Project Settings → Your apps → Web app
-   ───────────────────────────────────────── */
-import { initializeApp }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore, collection, addDoc, doc, getDoc, updateDoc, deleteDoc,
-  onSnapshot, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, where
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getDatabase, ref as dbRef, onValue, set, push, serverTimestamp as rtTs
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import {
-  getMessaging, getToken, onMessage
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+<!-- ══════════ SCRIPTS ══════════ -->
 
-/* ══ Firebase Config — แก้ตรงนี้ ══ */
-const firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId:             "YOUR_APP_ID"
-};
-/* ═══════════════════════════════════ */
-
-const fbApp   = initializeApp(firebaseConfig);
-const auth    = getAuth(fbApp);
-const db      = getFirestore(fbApp);
-const rtdb    = getDatabase(fbApp);
-
-/* ── Messaging (optional — เปิดใช้เมื่อมี VAPID key) ── */
-let messaging = null;
-try { messaging = getMessaging(fbApp); } catch(e) { /* ไม่มี service worker */ }
-
-/* ═══ State ═══ */
-let currentUser   = null;
-let allActivities = [];
-let unsubFeed     = null;
-let unsubNotif    = null;
-let pendingContactId = null; // activityId ที่กำลังจะส่ง request
-
-const VAPID_KEY = "YOUR_VAPID_KEY"; // Web Push certificate ใน Firebase Console
-
-/* ═══════════════════════════════════════════
-   AUTH STATE
-═══════════════════════════════════════════ */
-onAuthStateChanged(auth, async user => {
-  currentUser = user;
-  if (user) {
-    document.getElementById('authScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display    = 'block';
-    document.getElementById('userAvatar').textContent   =
-      (user.displayName || user.email || '?').slice(0,2).toUpperCase();
-
-    startFeedListener();
-    startNotifListener();
-    requestFCMPermission();
-  } else {
-    document.getElementById('authScreen').style.display = 'flex';
-    document.getElementById('mainApp').style.display    = 'none';
-    if (unsubFeed)  { unsubFeed();  unsubFeed  = null; }
-    if (unsubNotif) { unsubNotif(); unsubNotif = null; }
-  }
-});
-
-/* ═══════════════════════════════════════════
-   FCM — ขอสิทธิ์แจ้งเตือน
-═══════════════════════════════════════════ */
-async function requestFCMPermission() {
-  if (!messaging || !currentUser) return;
-  try {
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') return;
-    const token = await getToken(messaging, { vapidKey: VAPID_KEY });
-    if (token) {
-      // บันทึก FCM token ของ user ลง Firestore
-      await updateDoc(doc(db, 'users', currentUser.uid), { fcmToken: token })
-        .catch(() => addDoc(collection(db, 'users'), { uid: currentUser.uid, fcmToken: token }));
-    }
-    // รับ foreground messages
-    onMessage(messaging, payload => {
-      const { title, body } = payload.notification || {};
-      showToast(`🔔 ${title}: ${body}`);
-      document.getElementById('notifDot').classList.add('show');
-    });
-  } catch(e) { /* บน localhost หรือ HTTP จะ fail — ปกติ */ }
-}
-
-/* ═══════════════════════════════════════════
-   FIRESTORE — Realtime Feed Listener
-═══════════════════════════════════════════ */
-function startFeedListener() {
-  const q = query(collection(db, 'activities'), orderBy('createdAt', 'desc'));
-  unsubFeed = onSnapshot(q, snap => {
-    allActivities = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderFeed(allActivities);
-    // อัปเดต presence count ลง Realtime DB
-    set(dbRef(rtdb, `presence/activityCount`), allActivities.length);
-  });
-}
-
-/* ═══════════════════════════════════════════
-   REALTIME DB — Notification Listener
-═══════════════════════════════════════════ */
-function startNotifListener() {
-  if (!currentUser) return;
-  const notifRef = dbRef(rtdb, `notifications/${currentUser.uid}`);
-  unsubNotif = onValue(notifRef, snap => {
-    const data = snap.val();
-    if (!data) return;
-    const items = Object.entries(data).map(([k,v]) => ({ key: k, ...v }))
-      .sort((a,b) => b.timestamp - a.timestamp);
-    const unread = items.filter(i => !i.read).length;
-    document.getElementById('notifDot').classList.toggle('show', unread > 0);
-    renderNotifications(items);
-  });
-}
-
-function renderNotifications(items) {
-  const panel = document.getElementById('notifPanel');
-  if (!items.length) {
-    panel.innerHTML = `<p style="color:var(--muted);text-align:center;padding:24px 0;">ยังไม่มีการแจ้งเตือน</p>`;
-    return;
-  }
-  panel.innerHTML = items.map(n => `
-    <div class="notif-item ${n.read?'':'notif-unread'}">
-      <div class="notif-icon">${n.icon||'🔔'}</div>
-      <div>
-        <div class="notif-text">${n.text||''}</div>
-        <div class="notif-time">${timeAgo(n.timestamp)}</div>
-      </div>
-    </div>`).join('');
-}
-
-/* ═══════════════════════════════════════════
-   RENDER CARDS
-═══════════════════════════════════════════ */
-function renderFeed(acts) {
-  const feed  = document.getElementById('feed');
-  const label = document.getElementById('sectionLabel');
-  if (!acts.length) {
-    feed.innerHTML = `<div style="text-align:center;color:var(--muted);padding:56px 0">
-      <i class="bi bi-binoculars" style="font-size:2.5rem;display:block;margin-bottom:12px"></i>
-      ยังไม่มีกิจกรรม<br><small>กดปุ่ม + ด้านล่างเพื่อสร้างเลย!</small></div>`;
-    label.textContent = 'ไม่พบกิจกรรม';
-    return;
-  }
-  label.textContent = `พบ ${acts.length} กิจกรรม`;
-  feed.innerHTML = acts.map(buildCard).join('');
-
-  // Click on card body → open detail
-  feed.querySelectorAll('.card-top-area').forEach(el =>
-    el.addEventListener('click', () => openDetail(el.closest('[data-id]').dataset.id))
-  );
-}
-
-function buildCard(a) {
-  const uid      = currentUser?.uid || '';
-  const members  = Array.isArray(a.members)  ? a.members  : [];
-  const requests = Array.isArray(a.requests) ? a.requests : [];
-  const joined   = members.includes(uid);
-  const requested = requests.some(r => r.uid === uid);
-  const full     = members.length >= a.peopleNeeded;
-  const isOwner  = a.ownerId === uid;
-  const need     = Math.max(0, a.peopleNeeded - members.length);
-  const pendReqs = requests.filter(r => r.status === 'pending').length;
-
-  /* ── Button ── */
-  let btnHTML, btnClass;
-  if (isOwner) {
-    btnHTML  = `<i class="bi bi-person-check-fill"></i> กิจกรรมของคุณ`;
-    btnClass = 's-ghost'; 
-  } else if (joined) {
-    btnHTML  = `<i class="bi bi-check-circle-fill"></i> เข้าร่วมแล้ว — กดเพื่อออก`;
-    btnClass = 's-joined';
-  } else if (requested) {
-    btnHTML  = `<i class="bi bi-hourglass-split"></i> รอการอนุมัติ…`;
-    btnClass = 's-ghost';
-  } else if (full) {
-    btnHTML  = `<i class="bi bi-x-circle"></i> เต็มแล้ว`;
-    btnClass = 's-ghost';
-  } else if (a.joinType === 'request') {
-    btnHTML  = `<i class="bi bi-send-fill"></i> ส่ง Request เข้าร่วม`;
-    btnClass = 's-purple';
-  } else {
-    btnHTML  = `<i class="bi bi-lightning-fill"></i> เข้าร่วมกิจกรรม`;
-    btnClass = 's-lime';
-  }
-  const disabled = (isOwner || full || requested) ? 'disabled' : '';
-
-  /* ── Owner: show pending request badge ── */
-  const reqBadge = (isOwner && pendReqs > 0)
-    ? `<span class="request-badge"><i class="bi bi-bell-fill"></i> ${pendReqs} คำขอ</span>` : '';
-
-  const badge = a.urgent
-    ? `<span class="urgency-badge" style="background:rgba(255,107,107,.15);color:#ff9898">ด่วน!</span>`
-    : a.timeLabel
-    ? `<span class="urgency-badge" style="background:rgba(255,255,255,.07);color:var(--muted)">${a.timeLabel}</span>`
-    : '';
-
-  return `
-  <div class="activity-card" data-id="${a.id}" data-cat="${a.category||''}" data-title="${a.title||''}">
-    <div class="card-accent-bar" style="background:${a.gradient||'linear-gradient(90deg,#c8f135,#7be66e)'}"></div>
-    <div class="card-body-custom">
-      <div class="card-top-area">
-        <div class="card-top">
-          <div class="card-emoji">${a.emoji||'🎉'}</div>
-          <div class="card-title-block">
-            <div class="card-title">${a.title||'ไม่มีชื่อ'}${reqBadge}</div>
-            <div class="card-subtitle">${a.location||'ไม่ระบุสถานที่'}</div>
-          </div>
-          ${badge}
-        </div>
-        <div class="card-info">
-          <div class="info-pill people-pill">
-            <i class="bi bi-people-fill"></i>
-            <span class="pcount">ต้องการอีก <strong>${need}</strong> คน</span>
-          </div>
-          ${a.time ? `<div class="info-pill"><i class="bi bi-clock"></i><span>${a.time}</span></div>` : ''}
-          ${a.category ? `<div class="info-pill"><i class="bi bi-tag-fill" style="color:var(--accent2)"></i><span>${a.category}</span></div>` : ''}
-        </div>
-        <div class="avatar-stack">
-          ${members.slice(0,4).map((m,i)=>`<div class="av" style="background:${avColor(i)}">${(m||'?')[0].toUpperCase()}</div>`).join('')}
-          <span class="av-label">เข้าร่วม ${members.length}/${a.peopleNeeded} คน</span>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:8px">
-        <button class="btn-join ${btnClass}" style="flex:1" ${disabled}
-          onclick="onJoinBtn(event,'${a.id}','${a.joinType||'join'}','${isOwner}')">
-          ${btnHTML}
-        </button>
-        ${isOwner && pendReqs > 0
-          ? `<button class="btn-join s-purple" style="width:48px;flex-shrink:0" onclick="openRequests(event,'${a.id}')">
-               <i class="bi bi-person-lines-fill"></i>
-             </button>` : ''}
-      </div>
-    </div>
-  </div>`;
-}
-
-function avColor(i) {
-  return ['linear-gradient(135deg,#f77f00,#d62828)','linear-gradient(135deg,#4cc9f0,#4361ee)',
-          'linear-gradient(135deg,#7b2d8b,#c77dff)','linear-gradient(135deg,#43aa8b,#90be6d)'][i%4];
-}
-
-/* ═══════════════════════════════════════════
-   JOIN / LEAVE / REQUEST
-═══════════════════════════════════════════ */
-window.onJoinBtn = async (e, actId, joinType, isOwner) => {
-  e.stopPropagation();
-  if (isOwner === 'true') return;
-  if (!currentUser) { showToast('⚠️ กรุณาเข้าสู่ระบบก่อน'); return; }
-
-  const btn = e.currentTarget;
-  if (btn.disabled) return;
-
-  const actRef = doc(db, 'activities', actId);
-  const snap   = await getDoc(actRef);
-  if (!snap.exists()) return;
-  const a       = snap.data();
-  const members = Array.isArray(a.members) ? a.members : [];
-  const joined  = members.includes(currentUser.uid);
-
-  /* ── Toggle leave ── */
-  if (joined) {
-    if (!confirm('ออกจากกิจกรรมนี้?')) return;
-    btn.disabled = true; btn.innerHTML = `<span class="spin"></span>`;
-    await updateDoc(actRef, { members: arrayRemove(currentUser.uid) });
-    // Realtime DB: ลด count
-    set(dbRef(rtdb, `activityMeta/${actId}/memberCount`), members.length - 1);
-    showToast('👋 ออกจากกิจกรรมแล้ว');
-    return;
-  }
-
-  /* ── Request flow ── */
-  if (joinType === 'request') {
-    pendingContactId = actId;
-    document.getElementById('contactTitle').textContent = `📩 ส่ง Request: ${a.title}`;
-    document.getElementById('contactSub').textContent   = 'ผู้จัดจะได้รับการแจ้งเตือนและอนุมัติคำขอ';
-    document.getElementById('contactMsg').value = '';
-    openModal('contactModal');
-    return;
-  }
-
-  /* ── Join immediately ── */
-  btn.disabled = true; btn.innerHTML = `<span class="spin"></span>`;
-  try {
-    await updateDoc(actRef, { members: arrayUnion(currentUser.uid) });
-    // Realtime DB: อัปเดต memberCount แบบ realtime
-    set(dbRef(rtdb, `activityMeta/${actId}/memberCount`), members.length + 1);
-    // แจ้งเจ้าของ
-    await pushNotification(a.ownerId, {
-      icon: a.emoji || '🎉',
-      text: `${currentUser.displayName || currentUser.email} เข้าร่วม "${a.title}"`,
-      activityId: actId, read: false, timestamp: Date.now()
-    });
-    showToast('✅ เข้าร่วมกิจกรรมสำเร็จ!');
-  } catch(err) {
-    showToast('❌ ' + err.message);
-    btn.disabled = false;
-  }
-};
-
-/* ═══════════════════════════════════════════
-   SUBMIT REQUEST (Contact modal)
-═══════════════════════════════════════════ */
-window.submitRequest = async () => {
-  const msg = document.getElementById('contactMsg').value.trim();
-  if (!msg) { showToast('⚠️ กรุณาพิมพ์ข้อความก่อน'); return; }
-  const btn = document.getElementById('contactSubmitBtn');
-  btn.disabled = true; btn.innerHTML = `<span class="spin light"></span> กำลังส่ง…`;
-
-  const actRef = doc(db, 'activities', pendingContactId);
-  const snap   = await getDoc(actRef);
-  const a      = snap.data();
-
-  try {
-    // บันทึก request ใน Firestore
-    await updateDoc(actRef, {
-      requests: arrayUnion({
-        uid:     currentUser.uid,
-        name:    currentUser.displayName || currentUser.email,
-        msg,
-        status:  'pending',
-        sentAt:  Date.now()
-      })
-    });
-    // แจ้งเจ้าของผ่าน Realtime DB
-    await pushNotification(a.ownerId, {
-      icon: '📩',
-      text: `${currentUser.displayName || currentUser.email} ส่ง request เข้าร่วม "${a.title}"`,
-      activityId: pendingContactId, read: false, timestamp: Date.now()
-    });
-    showToast('✉️ ส่ง Request แล้ว รอเจ้าของห้องอนุมัติ!');
-    closeModal('contactModal');
-  } catch(err) {
-    showToast('❌ ' + err.message);
-  } finally {
-    btn.disabled = false; btn.innerHTML = `<i class="bi bi-send-fill"></i> ส่ง Request`;
-  }
-};
-
-/* ═══════════════════════════════════════════
-   OPEN REQUESTS PANEL (Host)
-═══════════════════════════════════════════ */
-window.openRequests = async (e, actId) => {
-  e.stopPropagation();
-  const snap = await getDoc(doc(db, 'activities', actId));
-  const a    = snap.data();
-  const reqs = (a.requests || []).filter(r => r.status === 'pending');
-
-  document.getElementById('reqModalSub').textContent = `กิจกรรม: ${a.title}`;
-  document.getElementById('requestsList').innerHTML = reqs.length
-    ? reqs.map((r,i) => `
-        <div class="member-row">
-          <div class="member-av" style="background:${avColor(i)}">${(r.name||'?')[0].toUpperCase()}</div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:.9rem">${r.name}</div>
-            <div style="font-size:.8rem;color:var(--muted)">${r.msg}</div>
-          </div>
-          <div style="display:flex;gap:6px">
-            <button onclick="approveRequest('${actId}','${r.uid}','${r.name}','${i}')"
-              style="padding:6px 12px;border-radius:8px;border:none;background:var(--accent);color:#0d0d0f;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif">
-              ✓ อนุมัติ
-            </button>
-            <button onclick="rejectRequest('${actId}','${r.uid}')"
-              style="padding:6px 12px;border-radius:8px;border:none;background:rgba(255,107,107,.15);color:#ff9898;border:1px solid rgba(255,107,107,.3);cursor:pointer;font-family:'Sarabun',sans-serif">
-              ✕
-            </button>
-          </div>
-        </div>`).join('')
-    : `<p style="color:var(--muted);padding:24px 0;text-align:center">ไม่มีคำขอที่รอการอนุมัติ</p>`;
-
-  openModal('requestsModal');
-};
-
-window.approveRequest = async (actId, uid, name) => {
-  const actRef = doc(db, 'activities', actId);
-  const snap   = await getDoc(actRef);
-  const a      = snap.data();
-  const updatedReqs = (a.requests||[]).map(r =>
-    r.uid === uid ? {...r, status:'approved'} : r);
-  await updateDoc(actRef, { requests: updatedReqs, members: arrayUnion(uid) });
-  set(dbRef(rtdb, `activityMeta/${actId}/memberCount`), (a.members||[]).length + 1);
-  // แจ้งผู้สมัคร
-  await pushNotification(uid, {
-    icon: '✅',
-    text: `คำขอเข้าร่วม "${a.title}" ได้รับการอนุมัติแล้ว!`,
-    activityId: actId, read: false, timestamp: Date.now()
-  });
-  showToast(`✅ อนุมัติ ${name} แล้ว`);
-  closeModal('requestsModal');
-};
-
-window.rejectRequest = async (actId, uid) => {
-  const actRef = doc(db, 'activities', actId);
-  const snap   = await getDoc(actRef);
-  const a      = snap.data();
-  const updatedReqs = (a.requests||[]).map(r =>
-    r.uid === uid ? {...r, status:'rejected'} : r);
-  await updateDoc(actRef, { requests: updatedReqs });
-  await pushNotification(uid, {
-    icon: '❌',
-    text: `คำขอเข้าร่วม "${a.title}" ไม่ได้รับการอนุมัติ`,
-    activityId: actId, read: false, timestamp: Date.now()
-  });
-  showToast('ปฏิเสธ request แล้ว');
-  closeModal('requestsModal');
-};
-
-/* ═══════════════════════════════════════════
-   PUSH NOTIFICATION via Realtime DB
-═══════════════════════════════════════════ */
-async function pushNotification(toUid, payload) {
-  if (!toUid) return;
-  const notifRef = dbRef(rtdb, `notifications/${toUid}`);
-  await push(notifRef, payload);
-}
-
-/* ═══════════════════════════════════════════
-   DETAIL MODAL
-═══════════════════════════════════════════ */
-window.openDetail = (id) => {
-  const a = allActivities.find(x => x.id === id);
-  if (!a) return;
-  const members  = a.members  || [];
-  const requests = (a.requests || []).filter(r => r.status === 'pending');
-  const isOwner  = a.ownerId === currentUser?.uid;
-
-  document.getElementById('detailContent').innerHTML = `
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-      <div class="card-emoji" style="width:56px;height:56px;font-size:1.8rem">${a.emoji||'🎉'}</div>
-      <div>
-        <div style="font-weight:700;font-size:1.2rem">${a.title}</div>
-        <div style="font-size:.82rem;color:var(--muted)">${a.category||''} · จัดโดย ${a.ownerName||'ไม่ระบุ'}</div>
-      </div>
-    </div>
-    ${a.description ? `<p style="font-size:.9rem;color:var(--muted);margin-bottom:14px">${a.description}</p>` : ''}
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-      <div class="info-pill people-pill"><i class="bi bi-people-fill"></i>
-        <span class="pcount">ต้องการ <strong>${a.peopleNeeded}</strong> คน</span></div>
-      ${a.time     ? `<div class="info-pill"><i class="bi bi-clock"></i><span>${a.time}</span></div>` : ''}
-      ${a.location ? `<div class="info-pill"><i class="bi bi-geo-alt-fill"></i><span>${a.location}</span></div>` : ''}
-      <div class="info-pill"><i class="bi bi-shield-fill-check" style="color:${a.joinType==='request'?'#b39dff':'var(--accent)'}"></i>
-        <span>${a.joinType==='request'?'ต้องอนุมัติ':'เข้าร่วมทันที'}</span></div>
-    </div>
-    <div class="sec-head">สมาชิก (${members.length}/${a.peopleNeeded})</div>
-    ${members.length
-      ? members.map((m,i) => `
-          <div class="member-row">
-            <div class="member-av" style="background:${avColor(i)}">${m[0].toUpperCase()}</div>
-            <div>
-              <div style="font-weight:500;font-size:.9rem">${m}</div>
-              <div style="font-size:.75rem;color:var(--muted)">${i===0?'ผู้จัด':'สมาชิก'}</div>
-            </div>
-          </div>`).join('')
-      : `<p style="color:var(--muted);font-size:.85rem;padding:12px 0">ยังไม่มีผู้เข้าร่วม</p>`}
-    ${isOwner && requests.length
-      ? `<div class="sec-head">คำขอรอการอนุมัติ (${requests.length})</div>
-         ${requests.map((r,i)=>`
-           <div class="member-row">
-             <div class="member-av" style="background:${avColor(i)}">${r.name[0].toUpperCase()}</div>
-             <div style="flex:1"><div style="font-weight:500;font-size:.9rem">${r.name}</div>
-               <div style="font-size:.78rem;color:var(--muted)">${r.msg}</div></div>
-             <button onclick="approveRequest('${a.id}','${r.uid}','${r.name}',${i})"
-               style="padding:5px 11px;border-radius:8px;border:none;background:var(--accent);color:#0d0d0f;font-weight:600;cursor:pointer;font-size:.82rem;font-family:'Sarabun',sans-serif">
-               อนุมัติ</button>
-           </div>`).join('')}` : ''}
-    <div style="height:12px"></div>`;
-  openModal('detailModal');
-};
-
-/* ═══════════════════════════════════════════
-   CREATE ACTIVITY
-═══════════════════════════════════════════ */
-window.submitCreate = async () => {
-  if (!currentUser) { showToast('⚠️ กรุณาเข้าสู่ระบบก่อน'); return; }
-  const title  = document.getElementById('c-title').value.trim();
-  const people = parseInt(document.getElementById('c-people').value) || 0;
-  if (!title)    { showToast('⚠️ กรุณาใส่ชื่อกิจกรรม'); return; }
-  if (people < 1){ showToast('⚠️ ระบุจำนวนคนที่ต้องการ'); return; }
-
-  const emoji    = document.querySelector('.emoji-opt.sel')?.dataset.e || '🎉';
-  const gradient = document.querySelector('.grad-opt.sel')?.dataset.g  || 'linear-gradient(90deg,#c8f135,#7be66e)';
-  const btn      = document.getElementById('createSubmitBtn');
-  btn.disabled   = true; btn.innerHTML = `<span class="spin"></span> กำลังสร้าง…`;
-
-  try {
-    const docRef = await addDoc(collection(db, 'activities'), {
-      title,
-      location:    document.getElementById('c-loc').value.trim(),
-      time:        document.getElementById('c-time').value.trim(),
-      peopleNeeded: people,
-      description: document.getElementById('c-desc').value.trim(),
-      emoji, gradient,
-      category:    document.getElementById('c-cat').value,
-      joinType:    document.getElementById('c-jointype').value,
-      members:     [currentUser.uid],
-      requests:    [],
-      ownerId:     currentUser.uid,
-      ownerName:   currentUser.displayName || currentUser.email,
-      createdAt:   serverTimestamp(),
-      urgent:      false,
-    });
-    // Realtime DB — sync memberCount
-    set(dbRef(rtdb, `activityMeta/${docRef.id}`), { memberCount: 1, title });
-    showToast('🎉 สร้างกิจกรรมสำเร็จ!');
-    closeModal('createModal');
-    ['c-title','c-loc','c-time','c-people','c-desc'].forEach(id => { document.getElementById(id).value = ''; });
-  } catch(err) {
-    showToast('❌ ' + err.message);
-  } finally {
-    btn.disabled = false; btn.innerHTML = `<i class="bi bi-plus-circle-fill"></i> สร้างกิจกรรม`;
-  }
-};
-
-/* ═══════════════════════════════════════════
-   AUTH
-═══════════════════════════════════════════ */
-window.doLogin = async (btn) => {
-  const email = document.getElementById('li-email').value.trim();
-  const pass  = document.getElementById('li-pass').value;
-  const errEl = document.getElementById('li-err');
-  errEl.textContent = ''; setLoading(btn, true);
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-  } catch(e) {
-    errEl.textContent = thErr(e.code); setLoading(btn, false, 'เข้าสู่ระบบ');
-  }
-};
-
-window.doRegister = async (btn) => {
-  const name  = document.getElementById('re-name').value.trim();
-  const email = document.getElementById('re-email').value.trim();
-  const pass  = document.getElementById('re-pass').value;
-  const errEl = document.getElementById('re-err');
-  errEl.textContent = ''; setLoading(btn, true);
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    if (name) await updateProfile(cred.user, { displayName: name });
-  } catch(e) {
-    errEl.textContent = thErr(e.code); setLoading(btn, false, 'สมัครสมาชิก');
-  }
-};
-
-window.doGoogle = async () => {
-  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
-  catch(e) { showToast('❌ ' + e.message); }
-};
-
-window.doSignOut = async () => {
-  if (!confirm('ออกจากระบบ?')) return;
-  await signOut(auth);
-};
-
-function thErr(code) {
-  return { 'auth/user-not-found':'ไม่พบบัญชีนี้',
-           'auth/wrong-password':'รหัสผ่านไม่ถูกต้อง',
-           'auth/email-already-in-use':'อีเมลนี้ถูกใช้แล้ว',
-           'auth/weak-password':'รหัสผ่านต้องมีอย่างน้อย 6 ตัว',
-           'auth/invalid-email':'รูปแบบอีเมลไม่ถูกต้อง',
-           'auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }[code] || code;
-}
-
-function setLoading(btn, loading, resetText='') {
-  btn.disabled = loading;
-  btn.querySelector('span').textContent = loading ? 'กำลังดำเนินการ…' : resetText;
-}
-
-/* ═══ Utils ═══ */
-function timeAgo(ts) {
-  if (!ts) return '';
-  const diff = Date.now() - ts;
-  if (diff < 60000)   return 'เมื่อกี้';
-  if (diff < 3600000) return `${Math.floor(diff/60000)} นาทีที่แล้ว`;
-  if (diff < 86400000)return `${Math.floor(diff/3600000)} ชั่วโมงที่แล้ว`;
-  return `${Math.floor(diff/86400000)} วันที่แล้ว`;
-}
-</script>
-
-<!-- ══════════ UI JS (non-Firebase) ══════════ -->
-<script>
-  /* Modals */
-  function openModal(id)  { document.getElementById(id).classList.add('open'); }
-  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-  /* Toast */
-  let _tt;
-  function showToast(msg) {
-    const t = document.getElementById('toastBar');
-    t.textContent = msg; t.classList.add('show');
-    clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), 3200);
-  }
-  window.showToast = showToast;
-
-  /* Filter */
-  document.querySelectorAll('.chip').forEach(c =>
-    c.addEventListener('click', () => {
-      document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-      c.classList.add('active');
-      applyFilter();
-    })
-  );
-  function applyFilter() {
-    const cat = document.querySelector('.chip.active')?.dataset.cat || 'all';
-    const q   = (document.getElementById('searchInput')?.value || '').toLowerCase();
-    document.querySelectorAll('.activity-card').forEach(card => {
-      const mc = cat === 'all' || card.dataset.cat === cat;
-      const mq = !q || card.dataset.title.toLowerCase().includes(q);
-      card.style.display = mc && mq ? '' : 'none';
-    });
-  }
-  window.applyFilter = applyFilter;
-
-  /* Bottom nav */
-  function setNav(el, page) {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
-    if (page === 'explore') showToast('🧭 สำรวจ — เร็วๆ นี้!');
-    if (page === 'myplans') showToast('📅 แผนของฉัน — เร็วๆ นี้!');
-    if (page === 'profile') showToast('👤 โปรไฟล์ — เร็วๆ นี้!');
-  }
-  window.setNav = setNav;
-
-  /* Auth tab */
-  function switchTab(tab) {
-    document.getElementById('tabLogin').classList.toggle('active', tab==='login');
-    document.getElementById('tabRegister').classList.toggle('active', tab==='register');
-    document.getElementById('panelLogin').style.display    = tab==='login'    ? '' : 'none';
-    document.getElementById('panelRegister').style.display = tab==='register' ? '' : 'none';
-    document.getElementById('li-err').textContent = '';
-    document.getElementById('re-err').textContent = '';
-  }
-  window.switchTab = switchTab;
-
-  /* Emoji picker */
-  document.querySelectorAll('.emoji-opt').forEach(el =>
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('sel'));
-      el.classList.add('sel');
-    })
-  );
-
-  /* Gradient picker */
-  document.querySelectorAll('.grad-opt').forEach(el =>
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.grad-opt').forEach(e => e.classList.remove('sel'));
-      el.classList.add('sel');
-    })
-  );
-</script>
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- UI Logic (โหลดก่อน firebase.js เพราะ firebase.js ใช้ window.showToast / openModal) -->
+<script src="app.js"></script>
+
+<!-- Firebase Logic (ES Module — ต้องเป็น type="module") -->
+<script type="module" src="firebase.js"></script>
+
 </body>
 </html>
