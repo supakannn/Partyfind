@@ -26,13 +26,13 @@ import {
    → Project Settings → Your apps → Web app
    ══════════════════════════════════════════ */
 const firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  apiKey:            "AIzaSyBLLtQRG7VGovcuttmSEtY_05pZBZPTGT0",
+  authDomain:        "partyfind-27067.firebaseapp.com",
   databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  projectId:         "partyfind-27067",
+  storageBucket:     "partyfind-27067.firebasestorage.app",
+  messagingSenderId: "573514029471",
+  appId:             "Y1:573514029471:web:3256375854fbeeebb145aa"
 };
 
 /* ── VAPID Key สำหรับ Cloud Messaging ──
